@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: squid-game
+  labels:
+    app: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: war-game
+  template:
+    metadata:
+      name: centos-demo
+      labels:
+        name: war-game
+    spec:
+        volumes:
+        - name: "userpassword"
+          secret:
+              secretName: passwords
+              defaultMode: 0400
+        containers:
+          - name: centos-test
+            image: akash006/war-game:latest
+            imagePullPolicy: Always
+            lifecycle:
+              postStart:
+                exec:
+                  command: ["/var/opt/bootstrap.sh"]
+            securityContext:
+              privileged: true
+              allowPrivilegeEscalation: true
+            volumeMounts:
+              - mountPath: "/var/passwords"
+                name: "userpassword"
+        dnsPolicy: ClusterFirst
